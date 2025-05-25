@@ -37,8 +37,12 @@ for await (const msg of relay.req([{ kinds: [4552], "#a": [flags.a] }])) {
     }]);
 
     if (list) {
-      list.tags.push(["p", event.pubkey]);
-      list = await signer.signEvent(list);
+      if (list.tags.some(tag => tag[0] === "p" && tag[1] === event.pubkey)) {
+        continue;
+      } else {
+        list.tags.push(["p", event.pubkey]);
+        list = await signer.signEvent(list);
+      }
     } else {
       list = await signer.signEvent({
         kind: 34551,

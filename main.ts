@@ -70,11 +70,13 @@ for await (const msg of relay.req([{ kinds: [4552], "#a": [groupAddr] }])) {
       members.add(event.pubkey);
 
       const list = await signer.signEvent({
-        ...existing,
+        kind: 34551,
+        content: existing.content ?? "",
         tags: [
           ["d", groupAddr],
           ...([...members].map((m) => ["p", m])),
         ],
+        created_at: Math.floor(Date.now() / 1000),
       });
 
       await relay.event(list);

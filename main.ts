@@ -48,9 +48,17 @@ for (const [name, value] of existing?.tags ?? []) {
   }
 }
 
+if (existing) {
+  console.log(
+    `Found ${members.size} existing member${members.size === 1 ? "" : "s"}`,
+  );
+} else {
+  console.log("Existing member list not found. A new one will be created.");
+}
+
 console.log(`Listening for events on ${relayUrl}...`);
 
-for await (const msg of relay.req([{ kinds: [4552], "#a": [groupAddr], limit: 0 }])) {
+for await (const msg of relay.req([{ kinds: [4552], "#a": [groupAddr] }])) {
   if (msg[0] === "EVENT") {
     const [_, _subId, event] = msg;
     console.log(`Got join request from ${event.pubkey}`);

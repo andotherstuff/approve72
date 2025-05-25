@@ -32,9 +32,12 @@ const signer = new NSecSigner(decoded.data);
 const relay = new NRelay1(relayUrl);
 const pubkey = await signer.getPublicKey();
 
+console.log(`Listening for events on ${relayUrl}...`);
+
 for await (const msg of relay.req([{ kinds: [4552], "#a": [groupAddr] }])) {
   if (msg[0] === "EVENT") {
     const [_, _subId, event] = msg;
+    console.log(`Got join request from ${event.pubkey}`);
 
     let [list] = await relay.query([{
       kinds: [34551],
@@ -48,6 +51,7 @@ for await (const msg of relay.req([{ kinds: [4552], "#a": [groupAddr] }])) {
           name === "p" && value === event.pubkey
         )
       ) {
+        console.log(`Skipped existing member: ${event.pubkey}`);
         continue;
       } else {
         list.tags.push(["p", event.pubkey]);
@@ -62,6 +66,7 @@ for await (const msg of relay.req([{ kinds: [4552], "#a": [groupAddr] }])) {
       });
     }
 
+    console.log(`Approved new member: ${event.pubkey}`);
     await relay.event(list);
   }
 }

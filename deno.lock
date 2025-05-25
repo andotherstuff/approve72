@@ -3,11 +3,7 @@
   "specifiers": {
     "jsr:@nostrify/nostrify@~0.46.1": "0.46.1",
     "jsr:@nostrify/types@0.36": "0.36.0",
-    "jsr:@scure/base@^1.2.4": "1.2.5",
-    "jsr:@std/assert@1": "1.0.13",
-    "jsr:@std/cli@^1.0.17": "1.0.17",
     "jsr:@std/encoding@~0.224.1": "0.224.3",
-    "jsr:@std/internal@^1.0.6": "1.0.6",
     "npm:lru-cache@^10.2.0": "10.4.3",
     "npm:nostr-tools@^2.10.4": "2.13.0",
     "npm:nostr-tools@^2.13.0": "2.13.0",
@@ -20,7 +16,6 @@
       "dependencies": [
         "jsr:@nostrify/nostrify",
         "jsr:@nostrify/types",
-        "jsr:@scure/base",
         "jsr:@std/encoding",
         "npm:lru-cache",
         "npm:nostr-tools@^2.10.4",
@@ -31,23 +26,8 @@
     "@nostrify/types@0.36.0": {
       "integrity": "b3413467debcbd298d217483df4e2aae6c335a34765c90ac7811cf7c637600e7"
     },
-    "@scure/base@1.2.5": {
-      "integrity": "9fee89cb561205b4e19145a08ec45b23d99896c7b53de28e88f5aba48221c98d"
-    },
-    "@std/assert@1.0.13": {
-      "integrity": "ae0d31e41919b12c656c742b22522c32fb26ed0cba32975cb0de2a273cb68b29",
-      "dependencies": [
-        "jsr:@std/internal"
-      ]
-    },
-    "@std/cli@1.0.17": {
-      "integrity": "e15b9abe629e17be90cc6216327f03a29eae613365f1353837fa749aad29ce7b"
-    },
     "@std/encoding@0.224.3": {
       "integrity": "5e861b6d81be5359fad4155e591acf17c0207b595112d1840998bb9f476dbdaf"
-    },
-    "@std/internal@1.0.6": {
-      "integrity": "9533b128f230f73bd209408bb07a4b12f8d4255ab2a4d22a1fd6d87304aca9a4"
     }
   },
   "npm": {
@@ -120,8 +100,6 @@
   "workspace": {
     "dependencies": [
       "jsr:@nostrify/nostrify@~0.46.1",
-      "jsr:@std/assert@1",
-      "jsr:@std/cli@^1.0.17",
       "npm:nostr-tools@^2.13.0"
     ]
   }

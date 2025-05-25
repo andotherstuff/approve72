@@ -1,11 +1,10 @@
 {
   "tasks": {
-    "dev": "deno run --watch main.ts"
+    "dev": "deno run -A --watch main.ts",
+    "start": "deno run -A --env-file main.ts"
   },
   "imports": {
     "@nostrify/nostrify": "jsr:@nostrify/nostrify@^0.46.1",
-    "@std/assert": "jsr:@std/assert@1",
-    "@std/cli": "jsr:@std/cli@^1.0.17",
     "nostr-tools": "npm:nostr-tools@^2.13.0"
   }
 }

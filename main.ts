@@ -1,43 +1,53 @@
 import { NRelay1, NSecSigner } from "@nostrify/nostrify";
 import { nip19 } from "nostr-tools";
-import { parseArgs } from "@std/cli/parse-args";
 
-const flags = parseArgs(Deno.args, {
-  string: ["nsec", "a", "r"],
-});
+const relayUrl = Deno.env.get("RELAY_URL");
+const groupAddr = Deno.env.get("GROUP_ADDR");
+const nsec = Deno.env.get("NSEC");
 
-const decoded = nip19.decode(flags.nsec!);
+if (!relayUrl) {
+  throw new Error(
+    "Missing RELAY_URL environment variable. Should be the relay URL to connect to.",
+  );
+}
+if (!groupAddr) {
+  throw new Error(
+    "Missing GROUP_ADDR environment variable. Should be an a-tag style value for the target group.",
+  );
+}
+if (!nsec) {
+  throw new Error(
+    "Missing NSEC environment variable. Should be the nsec of the approver bot.",
+  );
+}
+
+const decoded = nip19.decode(nsec);
 
 if (decoded.type !== "nsec") {
   throw new Error("Invalid nsec");
 }
 
-const nsec = decoded.data;
+const signer = new NSecSigner(decoded.data);
 
-if (!flags.a) {
-  throw new Error("Missing -a tag for the group");
-}
-
-if (!flags.r) {
-  throw new Error("Missing -r relay URL");
-}
-
-const relay = new NRelay1(flags.r);
-const signer = new NSecSigner(nsec);
+const relay = new NRelay1(relayUrl);
 const pubkey = await signer.getPublicKey();
 
-for await (const msg of relay.req([{ kinds: [4552], "#a": [flags.a] }])) {
+for await (const msg of relay.req([{ kinds: [4552], "#a": [groupAddr] }])) {
   if (msg[0] === "EVENT") {
     const [_, _subId, event] = msg;
 
     let [list] = await relay.query([{
       kinds: [34551],
-      "#d": [flags.a],
+      "#d": [groupAddr],
       authors: [pubkey],
     }]);
 
     if (list) {
-      if (list.tags.some(tag => tag[0] === "p" && tag[1] === event.pubkey)) {
+      if (
+        list.tags.some(([name, value]) =>
+          name === "p" && value === event.pubkey
+        )
+      ) {
         continue;
       } else {
         list.tags.push(["p", event.pubkey]);
@@ -46,7 +56,7 @@ for await (const msg of relay.req([{ kinds: [4552], "#a": [flags.a] }])) {
     } else {
       list = await signer.signEvent({
         kind: 34551,
-        tags: [["d", flags.a], ["p", event.pubkey]],
+        tags: [["d", groupAddr], ["p", event.pubkey]],
         content: "",
         created_at: Math.floor(Date.now() / 1000),
       });

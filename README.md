@@ -1,20 +1,29 @@
 # NIP-72 Community Join Request Auto-Approver Bot
 
-A Nostr bot that automatically approves join requests for NIP-72 moderated communities by maintaining a community member list.
+A Nostr bot that automatically approves join requests for NIP-72 moderated
+communities by maintaining a community member list.
 
 ## Overview
 
-This bot monitors a specified relay for join request events (kind 4552) targeting a specific community and automatically adds the requesting users to the community's member list. It maintains a replaceable event (kind 34551) that serves as the community's member roster.
+This bot monitors a specified relay for join request events (kind 4552)
+targeting a specific community and automatically adds the requesting users to
+the community's member list. It maintains a replaceable event (kind 34551) that
+serves as the community's member roster.
 
 ## How It Works
 
-1. **Listens for Join Requests**: The bot subscribes to kind 4552 events that are tagged with the specified community's `a` tag
-2. **Maintains Member List**: For each join request, it updates or creates a kind 34551 replaceable event containing the community member list
-3. **Auto-Approval**: New members are automatically added to the `p` tags in the member list event
+1. **Listens for Join Requests**: The bot subscribes to kind 4552 events that
+   are tagged with the specified community's `a` tag
+2. **Maintains Member List**: For each join request, it updates or creates a
+   kind 34551 replaceable event containing the community member list
+3. **Auto-Approval**: New members are automatically added to the `p` tags in the
+   member list event
 
 ## NIP-72 Context
 
-[NIP-72](https://github.com/nostr-protocol/nips/blob/master/72.md) defines moderated communities where:
+[NIP-72](https://github.com/nostr-protocol/nips/blob/master/72.md) defines
+moderated communities where:
+
 - Communities are defined by kind 34550 events
 - Community posts are tagged with the community's `a` tag
 - Moderators can approve posts using kind 4550 events
@@ -31,60 +40,86 @@ This bot monitors a specified relay for join request events (kind 4552) targetin
 
 1. Clone this repository
 2. Ensure Deno is installed on your system
+3. Copy `.env.example` to `.env` and configure your environment variables
+
+## Configuration
+
+The bot is configured using environment variables. Create a `.env` file in the
+project root with the following variables:
+
+```env
+RELAY_URL="wss://relay.example.com"
+GROUP_ADDR="34550:pubkey:community-identifier"
+NSEC="nsec1your-private-key-here"
+```
+
+### Environment Variables
+
+- `RELAY_URL`: The relay URL to connect to (required)
+- `GROUP_ADDR`: The community's `a` tag identifier in format
+  `34550:<pubkey>:<d-identifier>` (required)
+- `NSEC`: Your Nostr private key in nsec format (required)
+
+### Example Configuration
+
+```env
+RELAY_URL="wss://relay.chorus.community/"
+GROUP_ADDR="34550:932614571afcbad4d17a191ee281e39eebbb41b93fac8fd87829622aeb112f4d:oslo-freedom-forum-2025-mb3ch5ft"
+NSEC="nsec1abc123def456..."
+```
 
 ## Usage
 
-```bash
-deno run --allow-net main.ts --nsec <your-nsec-key> --a <community-a-tag> --r <relay-url>
-```
-
-### Parameters
-
-- `--nsec`: Your Nostr private key in nsec format (required)
-- `--a`: The community's `a` tag identifier in format `34550:<pubkey>:<d-identifier>` (required)
-- `--r`: The relay URL to connect to (required)
-
-### Example
+### Run the Bot
 
 ```bash
-deno run --allow-net main.ts \
-  --nsec nsec1abc123... \
-  --a "34550:npub1xyz789...:mycommunity" \
-  --r "wss://relay.example.com"
+deno task start
 ```
 
-## Development
+Or run directly:
 
-### Run in Development Mode
+```bash
+deno run -A --env-file main.ts
+```
+
+### Development Mode
+
+Run with file watching for automatic restarts during development:
 
 ```bash
 deno task dev
 ```
 
-This will run the bot with file watching enabled for automatic restarts during development.
-
 ### Dependencies
 
 - `@nostrify/nostrify`: Nostr protocol implementation
 - `nostr-tools`: Nostr utilities and key handling
-- `@std/cli`: Command-line argument parsing
 
 ## Security Considerations
 
-- **Private Key Security**: Never commit your nsec to version control. Use environment variables or secure key management
+- **Private Key Security**: Never commit your `.env` file or nsec to version
+  control. The `.env` file is already included in `.gitignore` for safety
+- **Environment Variables**: Store sensitive configuration in environment
+  variables or use secure key management systems in production
 - **Relay Trust**: Only connect to trusted relays
-- **Community Management**: Ensure you have proper authorization to manage the target community
-- **Rate Limiting**: The bot processes requests as they come in; consider implementing rate limiting for high-traffic communities
+- **Community Management**: Ensure you have proper authorization to manage the
+  target community
+- **Rate Limiting**: The bot processes requests as they come in; consider
+  implementing rate limiting for high-traffic communities
 
 ## Event Types
 
 ### Input Events (Kind 4552)
+
 The bot listens for join request events with:
+
 - `kind`: 4552 (join request)
 - `#a` tag: Matching the specified community identifier
 
 ### Output Events (Kind 34551)
+
 The bot creates/updates member list events with:
+
 - `kind`: 34551 (community member list)
 - `#d` tag: Community identifier
 - `#p` tags: List of member public keys
@@ -93,7 +128,8 @@ The bot creates/updates member list events with:
 
 - Only handles automatic approval (no rejection logic)
 - Requires the bot operator to be authorized to manage the community
-- No built-in duplicate detection (relies on Nostr's replaceable event semantics)
+- No built-in duplicate detection (relies on Nostr's replaceable event
+  semantics)
 - No member removal functionality
 
 ## Contributing

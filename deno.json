@@ -3,6 +3,9 @@
     "dev": "deno run --watch main.ts"
   },
   "imports": {
-    "@std/assert": "jsr:@std/assert@1"
+    "@nostrify/nostrify": "jsr:@nostrify/nostrify@^0.46.1",
+    "@std/assert": "jsr:@std/assert@1",
+    "@std/cli": "jsr:@std/cli@^1.0.17",
+    "nostr-tools": "npm:nostr-tools@^2.13.0"
   }
 }

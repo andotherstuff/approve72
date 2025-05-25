@@ -32,41 +32,45 @@ const signer = new NSecSigner(decoded.data);
 const relay = new NRelay1(relayUrl);
 const pubkey = await signer.getPublicKey();
 
+console.log("Loading existing member list...");
+
+const members = new Set<string>();
+
+const [existing] = await relay.query([{
+  kinds: [34551],
+  "#d": [groupAddr],
+  authors: [pubkey],
+}]);
+
+for (const [name, value] of existing?.tags ?? []) {
+  if (name === "p") {
+    members.add(value);
+  }
+}
+
 console.log(`Listening for events on ${relayUrl}...`);
 
-for await (const msg of relay.req([{ kinds: [4552], "#a": [groupAddr] }])) {
+for await (const msg of relay.req([{ kinds: [4552], "#a": [groupAddr], limit: 0 }])) {
   if (msg[0] === "EVENT") {
     const [_, _subId, event] = msg;
     console.log(`Got join request from ${event.pubkey}`);
 
-    let [list] = await relay.query([{
-      kinds: [34551],
-      "#d": [groupAddr],
-      authors: [pubkey],
-    }]);
-
-    if (list) {
-      if (
-        list.tags.some(([name, value]) =>
-          name === "p" && value === event.pubkey
-        )
-      ) {
-        console.log(`Skipped existing member: ${event.pubkey}`);
-        continue;
-      } else {
-        list.tags.push(["p", event.pubkey]);
-        list = await signer.signEvent(list);
-      }
+    if (members.has(event.pubkey)) {
+      console.log(`Skipped existing member: ${event.pubkey}`);
+      continue;
     } else {
-      list = await signer.signEvent({
-        kind: 34551,
-        tags: [["d", groupAddr], ["p", event.pubkey]],
-        content: "",
-        created_at: Math.floor(Date.now() / 1000),
-      });
-    }
+      members.add(event.pubkey);
 
-    console.log(`Approved new member: ${event.pubkey}`);
-    await relay.event(list);
+      const list = await signer.signEvent({
+        ...existing,
+        tags: [
+          ["d", groupAddr],
+          ...([...members].map((m) => ["p", m])),
+        ],
+      });
+
+      await relay.event(list);
+      console.log(`Approved new member: ${event.pubkey}`);
+    }
   }
 }
